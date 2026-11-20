@@ -73,8 +73,9 @@
             </a>
 
             <!-- REKENING -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
+            <a href="{{ route('accounts.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg
+            {{ request()->routeIs('accounts.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
 
                 <span>▣</span>
                 <span>Rekening</span>
