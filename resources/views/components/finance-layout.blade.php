@@ -83,13 +83,16 @@
             </a>
 
             <!-- KATEGORI -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
 
-                <span>▤</span>
-                <span>Kategori</span>
+            <a href="{{ route('categories.index') }}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg
+                {{ request()->routeIs('categories.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+
+                    <span>▤</span>
+                    <span>Kategori</span>
 
             </a>
+
 
 
             <!-- PERENCANAAN -->

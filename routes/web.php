@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -16,6 +17,10 @@ Route::middleware(['auth'])->group(function () {
 
     // MASTER REKENING
     Route::resource('accounts', AccountController::class)
+        ->except(['show']);
+
+    // Master Category
+    Route::resource('categories', CategoryController::class)
         ->except(['show']);
 
 });

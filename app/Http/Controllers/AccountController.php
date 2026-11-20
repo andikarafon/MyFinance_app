@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
@@ -13,7 +14,7 @@ class AccountController extends Controller
      */
     public function index()
     {
-        $accounts = Account::where('user_id', auth()->id())
+        $accounts = Account::where('user_id', Auth::id())
             ->orderBy('is_active', 'desc')
             ->orderBy('name')
             ->get();
@@ -54,7 +55,7 @@ class AccountController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $validated['user_id'] = auth()->id();
+        $validated['user_id'] = Auth::id();
         $validated['is_active'] = true;
 
         Account::create($validated);
@@ -125,7 +126,7 @@ class AccountController extends Controller
     private function authorizeAccount(Account $account): void
     {
         abort_unless(
-            $account->user_id === auth()->id(),
+            $account->user_id === Auth::id(),
             403,
             'Anda tidak memiliki akses ke rekening ini.'
         );
