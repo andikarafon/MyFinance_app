@@ -14,13 +14,14 @@
 
 <body class="bg-gray-50 text-gray-800 antialiased">
 
-<div class="min-h-screen md:flex">
+<div class="min-h-screen flex">
 
     <!-- ============================================== -->
     <!-- SIDEBAR -->
     <!-- ============================================== -->
 
-    <aside class="w-full md:w-64 bg-slate-900 text-white flex-shrink-0">
+    <aside id="sidebar"
+           class="w-64 bg-slate-900 text-white flex-shrink-0 transition-all duration-300">
 
         <!-- BRAND -->
         <div class="p-6 border-b border-slate-700">
@@ -49,6 +50,7 @@
         <!-- NAVIGATION -->
         <nav class="p-4 space-y-2">
 
+            <!-- MENU UTAMA -->
             <div class="text-xs uppercase tracking-wider text-slate-500 mb-3 px-3">
                 Menu Utama
             </div>
@@ -63,6 +65,7 @@
 
             </a>
 
+
             <!-- TRANSAKSI -->
             <a href="#"
                class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
@@ -72,33 +75,34 @@
 
             </a>
 
+
             <!-- REKENING -->
             <a href="{{ route('accounts.index') }}"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg
-            {{ request()->routeIs('accounts.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+               class="flex items-center gap-3 px-4 py-3 rounded-lg
+               {{ request()->routeIs('accounts.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
 
                 <span>▣</span>
                 <span>Rekening</span>
 
             </a>
 
+
             <!-- KATEGORI -->
-
             <a href="{{ route('categories.index') }}"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg
-                {{ request()->routeIs('categories.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+               class="flex items-center gap-3 px-4 py-3 rounded-lg
+               {{ request()->routeIs('categories.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
 
-                    <span>▤</span>
-                    <span>Kategori</span>
+                <span>▤</span>
+                <span>Kategori</span>
 
             </a>
-
 
 
             <!-- PERENCANAAN -->
             <div class="text-xs uppercase tracking-wider text-slate-500 mt-6 mb-3 px-3">
                 Perencanaan
             </div>
+
 
             <!-- ANGGARAN -->
             <a href="#"
@@ -108,6 +112,7 @@
                 <span>Anggaran</span>
 
             </a>
+
 
             <!-- TARGET TABUNGAN -->
             <a href="#"
@@ -124,6 +129,7 @@
                 Analisis
             </div>
 
+
             <!-- LAPORAN -->
             <a href="#"
                class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
@@ -132,6 +138,7 @@
                 <span>Laporan Keuangan</span>
 
             </a>
+
 
             <!-- EXPORT EXCEL -->
             <a href="#"
@@ -147,6 +154,7 @@
             <div class="text-xs uppercase tracking-wider text-slate-500 mt-6 mb-3 px-3">
                 Sistem
             </div>
+
 
             <!-- PENGATURAN -->
             <a href="#"
@@ -190,7 +198,7 @@
             </div>
 
 
-            <!-- CHANGE PASSWORD BUTTON -->
+            <!-- CHANGE PASSWORD -->
             <button type="button"
                     onclick="openPasswordModal()"
                     class="w-full flex items-center gap-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg transition">
@@ -225,29 +233,62 @@
     <!-- MAIN CONTENT -->
     <!-- ============================================== -->
 
-    <main class="flex-1 min-w-0">
+    <main id="mainContent" class="flex-1 min-w-0">
 
 
         <!-- HEADER -->
         <header class="bg-white border-b border-gray-200 px-6 py-5">
 
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div class="flex justify-between items-center gap-4">
 
-                <div>
+                <div class="flex items-center gap-4">
 
-                    <h1 class="text-xl font-semibold text-gray-800">
-                        {{ $title ?? 'Dashboard' }}
-                    </h1>
+                    <!-- SIDEBAR TOGGLE BUTTON -->
+                    <button type="button"
+                            id="sidebarToggle"
+                            onclick="toggleSidebar()"
+                            aria-label="Toggle Sidebar"
+                            aria-expanded="true"
+                            class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-emerald-600 transition">
 
-                    <p class="text-sm text-gray-500 mt-1">
-                        Selamat datang di MyFinance App
-                    </p>
+                        <svg id="toggleIcon"
+                             xmlns="http://www.w3.org/2000/svg"
+                             width="22"
+                             height="22"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+
+                        </svg>
+
+                    </button>
+
+
+                    <!-- PAGE TITLE -->
+                    <div>
+
+                        <h1 class="text-xl font-semibold text-gray-800">
+                            {{ $title ?? 'Dashboard' }}
+                        </h1>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Selamat datang di MyFinance App
+                        </p>
+
+                    </div>
 
                 </div>
 
 
                 <!-- CURRENT DATE -->
-                <div class="flex items-center gap-2 text-sm text-gray-500">
+                <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500">
 
                     <span>📅</span>
 
@@ -309,6 +350,7 @@
 
             </div>
 
+
             <button type="button"
                     onclick="closePasswordModal()"
                     class="text-gray-400 hover:text-gray-700 text-2xl">
@@ -369,7 +411,6 @@
                 </div>
 
 
-
                 <!-- NEW PASSWORD -->
                 <div>
 
@@ -413,7 +454,6 @@
                 </div>
 
 
-
                 <!-- CONFIRM PASSWORD -->
                 <div>
 
@@ -444,9 +484,7 @@
 
                 </div>
 
-
             </div>
-
 
 
             <!-- MODAL FOOTER -->
@@ -480,106 +518,152 @@
 </div>
 
 
-
 <!-- ============================================== -->
 <!-- JAVASCRIPT -->
 <!-- ============================================== -->
 
 <script>
 
-    // ==========================================
-    // OPEN PASSWORD MODAL
-    // ==========================================
+// ==========================================
+// SIDEBAR TOGGLE
+// ==========================================
 
-    function openPasswordModal() {
+function toggleSidebar() {
 
-        const modal = document.getElementById('passwordModal');
+    const sidebar = document.getElementById('sidebar');
+    const toggleButton = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('toggleIcon');
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+    if (!sidebar || !toggleButton) {
+        console.error('Sidebar element tidak ditemukan!');
+        return;
+    }
+
+    const isHidden = sidebar.classList.toggle('hidden');
+
+    toggleButton.setAttribute(
+        'aria-expanded',
+        String(!isHidden)
+    );
+
+    // ICON UPDATE
+    if (isHidden) {
+
+        toggleIcon.innerHTML = `
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        `;
+
+    } else {
+
+        toggleIcon.innerHTML = `
+            <path d="m15 18-6-6 6-6"/>
+        `;
 
     }
 
-
-    // ==========================================
-    // CLOSE PASSWORD MODAL
-    // ==========================================
-
-    function closePasswordModal() {
-
-        const modal = document.getElementById('passwordModal');
-
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-    }
+}
 
 
-    // ==========================================
-    // SHOW / HIDE PASSWORD
-    // ==========================================
+// ==========================================
+// OPEN PASSWORD MODAL
+// ==========================================
 
-    function togglePassword(id, button) {
+function openPasswordModal() {
 
-        const input = document.getElementById(id);
+    const modal = document.getElementById('passwordModal');
 
-        if (input.type === 'password') {
+    if (!modal) return;
 
-            input.type = 'text';
-            button.innerText = 'Hide';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 
-        } else {
-
-            input.type = 'password';
-            button.innerText = 'Show';
-
-        }
-
-    }
+}
 
 
-    // ==========================================
-    // CLOSE WHEN CLICKING OUTSIDE MODAL
-    // ==========================================
+// ==========================================
+// CLOSE PASSWORD MODAL
+// ==========================================
 
-    document.getElementById('passwordModal').addEventListener('click', function(e) {
+function closePasswordModal() {
 
-        if (e.target === this) {
+    const modal = document.getElementById('passwordModal');
 
-            closePasswordModal();
+    if (!modal) return;
 
-        }
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
 
-    });
-
-
-    // ==========================================
-    // CLOSE WITH ESC KEY
-    // ==========================================
-
-    document.addEventListener('keydown', function(e) {
-
-        if (e.key === 'Escape') {
-
-            closePasswordModal();
-
-        }
-
-    });
+}
 
 
-    // ==========================================
-    // REOPEN MODAL IF VALIDATION FAILED
-    // ==========================================
+// ==========================================
+// SHOW / HIDE PASSWORD
+// ==========================================
 
-    const passwordModal = document.getElementById('passwordModal');
+function togglePassword(id, button) {
 
-    if (passwordModal.dataset.reopen === '1') {
+    const input = document.getElementById(id);
 
-        openPasswordModal();
+    if (!input) return;
+
+    if (input.type === 'password') {
+
+        input.type = 'text';
+        button.innerText = 'Hide';
+
+    } else {
+
+        input.type = 'password';
+        button.innerText = 'Show';
 
     }
 
+}
+
+
+// ==========================================
+// CLOSE MODAL WHEN CLICKING OUTSIDE
+// ==========================================
+
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+
+    if (e.target === this) {
+
+        closePasswordModal();
+
+    }
+
+});
+
+
+// ==========================================
+// CLOSE MODAL WITH ESC KEY
+// ==========================================
+
+document.addEventListener('keydown', function(e) {
+
+    if (e.key === 'Escape') {
+
+        closePasswordModal();
+
+    }
+
+});
+
+
+// ==========================================
+// REOPEN MODAL IF VALIDATION FAILED
+// ==========================================
+
+const passwordModal = document.getElementById('passwordModal');
+
+if (passwordModal && passwordModal.dataset.reopen === '1') {
+
+    openPasswordModal();
+
+}
 
 </script>
 
