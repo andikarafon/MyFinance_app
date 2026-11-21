@@ -1,285 +1,448 @@
 
+@props(['title' => 'MyFinance App'])
+
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Dashboard' }} - MyFinance App</title>
+    <title>{{ $title }} - MyFinance App</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-50 text-gray-800 antialiased">
+<body
+    class="bg-slate-100 text-slate-800"
+    data-current-route="{{ request()->route()?->getName() }}"
+>
 
-<div class="min-h-screen flex">
+    <div class="min-h-screen flex">
 
-    <!-- ============================================== -->
-    <!-- SIDEBAR -->
-    <!-- ============================================== -->
+        {{-- =====================================================
+             SIDEBAR
+        ====================================================== --}}
+        <aside
+            id="sidebar"
+            class="w-64 min-h-screen bg-slate-900 text-white flex flex-col transition-all duration-300 shrink-0"
+        >
 
-    <aside id="sidebar"
-           class="w-64 bg-slate-900 text-white flex-shrink-0 transition-all duration-300">
+            {{-- BRAND --}}
+            <div class="h-20 flex items-center px-6 border-b border-slate-800 shrink-0">
 
-        <!-- BRAND -->
-        <div class="p-6 border-b border-slate-700">
+                <div class="flex items-center gap-3">
 
-            <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center">
 
-                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-xl">
-                    M
-                </div>
-
-                <div>
-                    <div class="text-xl font-bold">
-                        MyFinance
-                    </div>
-
-                    <div class="text-xs text-slate-400">
-                        Personal Finance Management
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- NAVIGATION -->
-        <nav class="p-4 space-y-2">
-
-            <!-- MENU UTAMA -->
-            <div class="text-xs uppercase tracking-wider text-slate-500 mb-3 px-3">
-                Menu Utama
-            </div>
-
-            <!-- DASHBOARD -->
-            <a href="{{ route('dashboard') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg
-               {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
-
-                <span>▦</span>
-                <span>Dashboard</span>
-
-            </a>
-
-
-            <!-- TRANSAKSI -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>⇄</span>
-                <span>Transaksi</span>
-
-            </a>
-
-
-            <!-- REKENING -->
-            <a href="{{ route('accounts.index') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg
-               {{ request()->routeIs('accounts.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
-
-                <span>▣</span>
-                <span>Rekening</span>
-
-            </a>
-
-
-            <!-- KATEGORI -->
-            <a href="{{ route('categories.index') }}"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg
-               {{ request()->routeIs('categories.*') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
-
-                <span>▤</span>
-                <span>Kategori</span>
-
-            </a>
-
-
-            <!-- PERENCANAAN -->
-            <div class="text-xs uppercase tracking-wider text-slate-500 mt-6 mb-3 px-3">
-                Perencanaan
-            </div>
-
-
-            <!-- ANGGARAN -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>▧</span>
-                <span>Anggaran</span>
-
-            </a>
-
-
-            <!-- TARGET TABUNGAN -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>◎</span>
-                <span>Target Tabungan</span>
-
-            </a>
-
-
-            <!-- ANALISIS -->
-            <div class="text-xs uppercase tracking-wider text-slate-500 mt-6 mb-3 px-3">
-                Analisis
-            </div>
-
-
-            <!-- LAPORAN -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>▥</span>
-                <span>Laporan Keuangan</span>
-
-            </a>
-
-
-            <!-- EXPORT EXCEL -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>⇩</span>
-                <span>Export Excel</span>
-
-            </a>
-
-
-            <!-- SISTEM -->
-            <div class="text-xs uppercase tracking-wider text-slate-500 mt-6 mb-3 px-3">
-                Sistem
-            </div>
-
-
-            <!-- PENGATURAN -->
-            <a href="#"
-               class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800">
-
-                <span>⚙</span>
-                <span>Pengaturan</span>
-
-            </a>
-
-        </nav>
-
-
-        <!-- ============================================== -->
-        <!-- USER PROFILE -->
-        <!-- ============================================== -->
-
-        <div class="p-4 border-t border-slate-700 mt-4">
-
-            <!-- USER INFORMATION -->
-            <div class="flex items-center gap-3 mb-4">
-
-                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-semibold">
-
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-
-                </div>
-
-                <div class="min-w-0">
-
-                    <div class="text-sm font-medium truncate">
-                        {{ auth()->user()->name }}
-                    </div>
-
-                    <div class="text-xs text-slate-400 truncate">
-                        {{ auth()->user()->email }}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- CHANGE PASSWORD -->
-            <button type="button"
-                    onclick="openPasswordModal()"
-                    class="w-full flex items-center gap-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg transition">
-
-                <span>🔒</span>
-                <span>Change Password</span>
-
-            </button>
-
-
-            <!-- LOGOUT -->
-            <form method="POST" action="{{ route('logout') }}" class="mt-2">
-
-                @csrf
-
-                <button type="submit"
-                        class="w-full text-left flex items-center gap-3 text-sm text-red-400 hover:text-red-300 hover:bg-slate-800 px-3 py-2 rounded-lg transition">
-
-                    <span>↪</span>
-                    <span>Logout</span>
-
-                </button>
-
-            </form>
-
-        </div>
-
-    </aside>
-
-
-    <!-- ============================================== -->
-    <!-- MAIN CONTENT -->
-    <!-- ============================================== -->
-
-    <main id="mainContent" class="flex-1 min-w-0">
-
-
-        <!-- HEADER -->
-        <header class="bg-white border-b border-gray-200 px-6 py-5">
-
-            <div class="flex justify-between items-center gap-4">
-
-                <div class="flex items-center gap-4">
-
-                    <!-- SIDEBAR TOGGLE BUTTON -->
-                    <button type="button"
-                            id="sidebarToggle"
-                            onclick="toggleSidebar()"
-                            aria-label="Toggle Sidebar"
-                            aria-expanded="true"
-                            class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-emerald-600 transition">
-
-                        <svg id="toggleIcon"
-                             xmlns="http://www.w3.org/2000/svg"
-                             width="22"
-                             height="22"
-                             viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-6 h-6 text-white"
                              fill="none"
+                             viewBox="0 0 24 24"
                              stroke="currentColor"
-                             stroke-width="2"
-                             stroke-linecap="round"
-                             stroke-linejoin="round">
+                             stroke-width="2">
 
-                            <line x1="3" y1="6" x2="21" y2="6"/>
-                            <line x1="3" y1="12" x2="21" y2="12"/>
-                            <line x1="3" y1="18" x2="21" y2="18"/>
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M12 8c-2.5 0-4 1-4 2.5S9.5 13 12 13s4 1 4 2.5S14.5 18 12 18m0-10V6m0 14v-2M4 5h16M4 19h16" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+                        <h1 class="text-lg font-bold tracking-wide">
+                            MyFinance
+                        </h1>
+
+                        <p class="text-xs text-slate-400">
+                            Personal Finance Manager
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {{-- =====================================================
+                 NAVIGATION
+            ====================================================== --}}
+            <nav class="flex-1 px-3 py-5 space-y-5 overflow-y-auto">
+
+                {{-- DASHBOARD --}}
+                <div>
+
+                    <a href="{{ route('dashboard') }}"
+                       class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                       {{ request()->routeIs('dashboard') ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5 shrink-0"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M3 10.5 12 3l9 7.5M5 9v11h14V9M9 20v-6h6v6" />
+
+                        </svg>
+
+                        <span class="text-sm font-medium">
+                            Dashboard
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                {{-- =====================================================
+                     TRANSAKSI
+                ====================================================== --}}
+                <div>
+
+                    {{-- TRANSAKSI HEADER --}}
+                    <button
+                        type="button"
+                        onclick="toggleMenuGroup('transactionMenu', 'transactionArrow')"
+                        class="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition"
+                        aria-controls="transactionMenu"
+                        aria-expanded="true"
+                    >
+
+                        <span>Transaksi</span>
+
+                        <svg id="transactionArrow"
+                             xmlns="http://www.w3.org/2000/svg"
+                             class="w-4 h-4 transition-transform duration-200 rotate-180"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="m6 9 6 6 6-6" />
 
                         </svg>
 
                     </button>
 
 
-                    <!-- PAGE TITLE -->
+                    {{-- TRANSAKSI CHILD MENU --}}
+                    <div id="transactionMenu" class="mt-1 space-y-1">
+
+                        {{-- PEMASUKAN --}}
+                        <a href="{{ route('transactions.income') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                           {{ request()->routeIs('transactions.income') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M7 17 17 7M7 7h10v10" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Pemasukan
+                            </span>
+
+                        </a>
+
+
+                        {{-- PENGELUARAN --}}
+                        <a href="{{ route('transactions.expense') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                           {{ request()->routeIs('transactions.expense') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M17 7 7 17m0-10v10h10" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Pengeluaran
+                            </span>
+
+                        </a>
+
+
+                        {{-- TRANSFER REKENING --}}
+                        <a href="{{ route('transactions.transfer') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                           {{ request()->routeIs('transactions.transfer') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M17 3l4 4-4 4M3 7h18M7 21l-4-4 4-4m14 4H3" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Transfer Rekening
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                {{-- =====================================================
+                     MASTER
+                ====================================================== --}}
+                <div>
+
+                    {{-- MASTER HEADER --}}
+                    <button
+                        type="button"
+                        onclick="toggleMenuGroup('masterMenu', 'masterArrow')"
+                        class="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition"
+                        aria-controls="masterMenu"
+                        aria-expanded="true"
+                    >
+
+                        <span>Master</span>
+
+                        <svg id="masterArrow"
+                             xmlns="http://www.w3.org/2000/svg"
+                             class="w-4 h-4 transition-transform duration-200 rotate-180"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="m6 9 6 6 6-6" />
+
+                        </svg>
+
+                    </button>
+
+
+                    {{-- MASTER CHILD MENU --}}
+                    <div id="masterMenu" class="mt-1 space-y-1">
+
+                        {{-- REKENING --}}
+                        <a href="{{ route('accounts.index') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                           {{ request()->routeIs('accounts.*') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <rect x="3" y="5" width="18" height="14" rx="2" />
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M3 10h18M7 15h3" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Rekening
+                            </span>
+
+                        </a>
+
+
+                        {{-- KATEGORI --}}
+                        <a href="{{ route('categories.index') }}"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                           {{ request()->routeIs('categories.*') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M20 12 12 20l-8-8V4h8l8 8Z" />
+
+                                <circle cx="8.5" cy="8.5" r="1" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Kategori
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </nav>
+
+
+            {{-- =====================================================
+                 USER PROFILE
+            ====================================================== --}}
+            <div class="border-t border-slate-800 p-4 shrink-0">
+
+                {{-- USER INFO --}}
+                <div class="flex items-center gap-3 mb-4">
+
+                    <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold shrink-0">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <p class="text-sm font-semibold text-white truncate">
+                            {{ Auth::user()->name }}
+                        </p>
+
+                        <p class="text-xs text-slate-400 truncate">
+                            {{ Auth::user()->email }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {{-- USER ACTIONS --}}
+                <div class="space-y-1">
+
+                    {{-- CHANGE PASSWORD --}}
+                    <button
+                        type="button"
+                        onclick="openPasswordModal()"
+                        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition"
+                    >
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5 shrink-0"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6Zm2-10V7a4 4 0 1 1 8 0v4" />
+
+                        </svg>
+
+                        <span>Change Password</span>
+
+                    </button>
+
+
+                    {{-- LOGOUT --}}
+                    <form method="POST" action="{{ route('logout') }}">
+
+                        @csrf
+
+                        <button
+                            type="submit"
+                            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition"
+                        >
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 class="w-5 h-5 shrink-0"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke="currentColor"
+                                 stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M15 17l5-5-5-5M20 12H9m4 5v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v1" />
+
+                            </svg>
+
+                            <span>Logout</span>
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        {{-- =====================================================
+             MAIN CONTENT
+        ====================================================== --}}
+        <div class="flex-1 min-w-0">
+
+            {{-- HEADER --}}
+            <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 lg:px-8">
+
+                <div class="flex items-center gap-4">
+
+                    {{-- SIDEBAR TOGGLE --}}
+                    <button
+                        type="button"
+                        onclick="toggleSidebar()"
+                        class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+                        title="Hide / Show Sidebar"
+                    >
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-6 h-6"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M4 6h16M4 12h16M4 18h16" />
+
+                        </svg>
+
+                    </button>
+
+
+                    {{-- PAGE TITLE --}}
                     <div>
 
-                        <h1 class="text-xl font-semibold text-gray-800">
-                            {{ $title ?? 'Dashboard' }}
-                        </h1>
+                        <h2 class="text-lg font-semibold text-slate-800">
+                            {{ $title }}
+                        </h2>
 
-                        <p class="text-sm text-gray-500 mt-1">
-                            Selamat datang di MyFinance App
+                        <p class="text-xs text-slate-500">
+                            MyFinance App
                         </p>
 
                     </div>
@@ -287,386 +450,348 @@
                 </div>
 
 
-                <!-- CURRENT DATE -->
-                <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500">
-
-                    <span>📅</span>
-
-                    <span>
-                        {{ now()->translatedFormat('d F Y') }}
-                    </span>
-
+                {{-- CURRENT DATE --}}
+                <div class="text-sm text-slate-500 hidden sm:block">
+                    {{ now()->translatedFormat('l, d F Y') }}
                 </div>
 
-            </div>
-
-        </header>
+            </header>
 
 
-        <!-- PAGE CONTENT -->
-        <div class="p-4 sm:p-6 lg:p-8">
+            {{-- PAGE CONTENT --}}
+            <main class="p-6 lg:p-8">
 
-            {{ $slot }}
+                {{ $slot }}
+
+            </main>
 
         </div>
-
-
-        <!-- FOOTER -->
-        <footer class="px-6 py-5 border-t border-gray-200 text-center text-xs text-gray-400">
-
-            MyFinance App &copy; {{ date('Y') }}.
-            All Rights Reserved.
-
-        </footer>
-
-    </main>
-
-</div>
-
-
-<!-- ============================================== -->
-<!-- CHANGE PASSWORD MODAL -->
-<!-- ============================================== -->
-
-<div id="passwordModal"
-     data-reopen="{{ $errors->getBag('updatePassword')->any() ? '1' : '0' }}"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
-
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-
-
-        <!-- MODAL HEADER -->
-        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
-
-            <div>
-
-                <h2 class="text-lg font-semibold text-gray-800">
-                    Change Password
-                </h2>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    Update your account password
-                </p>
-
-            </div>
-
-
-            <button type="button"
-                    onclick="closePasswordModal()"
-                    class="text-gray-400 hover:text-gray-700 text-2xl">
-
-                &times;
-
-            </button>
-
-        </div>
-
-
-        <!-- MODAL BODY -->
-        <form method="POST" action="{{ route('password.update') }}">
-
-            @csrf
-
-            @method('PUT')
-
-
-            <div class="p-6 space-y-5">
-
-
-                <!-- CURRENT PASSWORD -->
-                <div>
-
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Current Password
-                    </label>
-
-                    <div class="relative">
-
-                        <input type="password"
-                               name="current_password"
-                               id="current_password"
-                               required
-                               autocomplete="current-password"
-                               placeholder="Enter current password"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-16 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-
-                        <button type="button"
-                                onclick="togglePassword('current_password', this)"
-                                class="absolute right-3 top-3 text-xs text-gray-500 hover:text-emerald-600">
-
-                            Show
-
-                        </button>
-
-                    </div>
-
-                    @error('current_password', 'updatePassword')
-
-                        <p class="text-xs text-red-500 mt-2">
-                            {{ $message }}
-                        </p>
-
-                    @enderror
-
-                </div>
-
-
-                <!-- NEW PASSWORD -->
-                <div>
-
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        New Password
-                    </label>
-
-                    <div class="relative">
-
-                        <input type="password"
-                               name="password"
-                               id="new_password"
-                               required
-                               minlength="8"
-                               autocomplete="new-password"
-                               placeholder="Enter new password"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-16 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-
-                        <button type="button"
-                                onclick="togglePassword('new_password', this)"
-                                class="absolute right-3 top-3 text-xs text-gray-500 hover:text-emerald-600">
-
-                            Show
-
-                        </button>
-
-                    </div>
-
-                    @error('password', 'updatePassword')
-
-                        <p class="text-xs text-red-500 mt-2">
-                            {{ $message }}
-                        </p>
-
-                    @enderror
-
-                    <p class="text-xs text-gray-400 mt-2">
-                        Minimum 8 characters.
-                    </p>
-
-                </div>
-
-
-                <!-- CONFIRM PASSWORD -->
-                <div>
-
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Confirm New Password
-                    </label>
-
-                    <div class="relative">
-
-                        <input type="password"
-                               name="password_confirmation"
-                               id="confirm_password"
-                               required
-                               minlength="8"
-                               autocomplete="new-password"
-                               placeholder="Confirm new password"
-                               class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-16 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-
-                        <button type="button"
-                                onclick="togglePassword('confirm_password', this)"
-                                class="absolute right-3 top-3 text-xs text-gray-500 hover:text-emerald-600">
-
-                            Show
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- MODAL FOOTER -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-
-
-                <!-- CANCEL -->
-                <button type="button"
-                        onclick="closePasswordModal()"
-                        class="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-
-                    Cancel
-
-                </button>
-
-
-                <!-- UPDATE PASSWORD -->
-                <button type="submit"
-                        class="px-5 py-2.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition">
-
-                    Update Password
-
-                </button>
-
-            </div>
-
-        </form>
 
     </div>
 
-</div>
+
+    {{-- =====================================================
+         CHANGE PASSWORD MODAL
+    ====================================================== --}}
+    <div
+        id="passwordModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 p-4"
+    >
+
+        <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+
+            {{-- MODAL HEADER --}}
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+
+                <h3 class="text-lg font-semibold text-slate-800">
+                    Change Password
+                </h3>
+
+                <button
+                    type="button"
+                    onclick="closePasswordModal()"
+                    class="text-slate-400 hover:text-slate-700 text-2xl"
+                >
+                    &times;
+                </button>
+
+            </div>
 
 
-<!-- ============================================== -->
-<!-- JAVASCRIPT -->
-<!-- ============================================== -->
+            {{-- MODAL FORM --}}
+            <form
+                method="POST"
+                action="{{ route('password.update') }}"
+                class="p-6 space-y-4"
+            >
 
-<script>
-
-// ==========================================
-// SIDEBAR TOGGLE
-// ==========================================
-
-function toggleSidebar() {
-
-    const sidebar = document.getElementById('sidebar');
-    const toggleButton = document.getElementById('sidebarToggle');
-    const toggleIcon = document.getElementById('toggleIcon');
-
-    if (!sidebar || !toggleButton) {
-        console.error('Sidebar element tidak ditemukan!');
-        return;
-    }
-
-    const isHidden = sidebar.classList.toggle('hidden');
-
-    toggleButton.setAttribute(
-        'aria-expanded',
-        String(!isHidden)
-    );
-
-    // ICON UPDATE
-    if (isHidden) {
-
-        toggleIcon.innerHTML = `
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-        `;
-
-    } else {
-
-        toggleIcon.innerHTML = `
-            <path d="m15 18-6-6 6-6"/>
-        `;
-
-    }
-
-}
+                @csrf
+                @method('PUT')
 
 
-// ==========================================
-// OPEN PASSWORD MODAL
-// ==========================================
+                {{-- VALIDATION ERRORS --}}
+                @if ($errors->updatePassword->any())
 
-function openPasswordModal() {
+                    <div class="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
 
-    const modal = document.getElementById('passwordModal');
+                        @foreach ($errors->updatePassword->all() as $error)
 
-    if (!modal) return;
+                            <p>{{ $error }}</p>
 
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+                        @endforeach
 
-}
+                    </div>
 
-
-// ==========================================
-// CLOSE PASSWORD MODAL
-// ==========================================
-
-function closePasswordModal() {
-
-    const modal = document.getElementById('passwordModal');
-
-    if (!modal) return;
-
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-
-}
+                @endif
 
 
-// ==========================================
-// SHOW / HIDE PASSWORD
-// ==========================================
+                {{-- CURRENT PASSWORD --}}
+                <div>
 
-function togglePassword(id, button) {
+                    <label
+                        for="current_password"
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Current Password
+                    </label>
 
-    const input = document.getElementById(id);
+                    <input
+                        type="password"
+                        name="current_password"
+                        id="current_password"
+                        required
+                        autocomplete="current-password"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none"
+                    >
 
-    if (!input) return;
-
-    if (input.type === 'password') {
-
-        input.type = 'text';
-        button.innerText = 'Hide';
-
-    } else {
-
-        input.type = 'password';
-        button.innerText = 'Show';
-
-    }
-
-}
+                </div>
 
 
-// ==========================================
-// CLOSE MODAL WHEN CLICKING OUTSIDE
-// ==========================================
+                {{-- NEW PASSWORD --}}
+                <div>
 
-document.getElementById('passwordModal').addEventListener('click', function(e) {
+                    <label
+                        for="new_password"
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        New Password
+                    </label>
 
-    if (e.target === this) {
+                    <input
+                        type="password"
+                        name="password"
+                        id="new_password"
+                        required
+                        autocomplete="new-password"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none"
+                    >
 
-        closePasswordModal();
-
-    }
-
-});
-
-
-// ==========================================
-// CLOSE MODAL WITH ESC KEY
-// ==========================================
-
-document.addEventListener('keydown', function(e) {
-
-    if (e.key === 'Escape') {
-
-        closePasswordModal();
-
-    }
-
-});
+                </div>
 
 
-// ==========================================
-// REOPEN MODAL IF VALIDATION FAILED
-// ==========================================
+                {{-- CONFIRM PASSWORD --}}
+                <div>
 
-const passwordModal = document.getElementById('passwordModal');
+                    <label
+                        for="password_confirmation"
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Confirm New Password
+                    </label>
 
-if (passwordModal && passwordModal.dataset.reopen === '1') {
+                    <input
+                        type="password"
+                        name="password_confirmation"
+                        id="password_confirmation"
+                        required
+                        autocomplete="new-password"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none"
+                    >
 
-    openPasswordModal();
+                </div>
 
-}
 
-</script>
+                {{-- SHOW PASSWORD --}}
+                <label class="flex items-center gap-2 text-sm text-slate-600">
 
+                    <input
+                        type="checkbox"
+                        id="showPassword"
+                        onchange="togglePasswordVisibility()"
+                        class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    >
+
+                    Tampilkan password
+
+                </label>
+
+
+                {{-- MODAL ACTIONS --}}
+                <div class="flex justify-end gap-3 pt-3">
+
+                    <button
+                        type="button"
+                        onclick="closePasswordModal()"
+                        class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
+                    >
+                        Update Password
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    {{-- =====================================================
+         JAVASCRIPT
+    ====================================================== --}}
+    <script>
+
+        /**
+         * SIDEBAR HIDE / SHOW
+         */
+        function toggleSidebar() {
+
+            const sidebar = document.getElementById('sidebar');
+
+            if (sidebar) {
+                sidebar.classList.toggle('hidden');
+            }
+
+        }
+
+
+        /**
+         * TRANSAKSI / MASTER ACCORDION
+         */
+        function toggleMenuGroup(menuId, arrowId) {
+
+            const menu = document.getElementById(menuId);
+            const arrow = document.getElementById(arrowId);
+
+            if (!menu || !arrow) {
+                return;
+            }
+
+            const isHidden = menu.classList.toggle('hidden');
+
+            arrow.classList.toggle('rotate-180', !isHidden);
+
+            // Update accessibility state.
+            const button = document.querySelector(
+                '[aria-controls="' + menuId + '"]'
+            );
+
+            if (button) {
+                button.setAttribute(
+                    'aria-expanded',
+                    String(!isHidden)
+                );
+            }
+
+            // Simpan status menu.
+            try {
+                localStorage.setItem(
+                    menuId,
+                    isHidden ? 'closed' : 'open'
+                );
+            } catch (error) {
+                // Abaikan jika localStorage tidak tersedia.
+            }
+
+        }
+
+
+        /**
+         * INITIALIZE ACCORDION
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+
+        const passwordModal = document.getElementById('passwordModal');
+
+        if (passwordModal) {
+            const errorElement = passwordModal.querySelector('.bg-red-50');
+
+            if (errorElement) {
+                openPasswordModal();
+            }
+        }
+
+        });
+
+
+        /**
+         * CHANGE PASSWORD MODAL
+         */
+        function openPasswordModal() {
+
+            const modal = document.getElementById('passwordModal');
+
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+        }
+
+
+        function closePasswordModal() {
+
+            const modal = document.getElementById('passwordModal');
+
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+        }
+
+
+        /**
+         * SHOW / HIDE PASSWORD
+         */
+        function togglePasswordVisibility() {
+
+            const checkbox = document.getElementById('showPassword');
+
+            const fields = [
+                document.getElementById('current_password'),
+                document.getElementById('new_password'),
+                document.getElementById('password_confirmation')
+            ];
+
+            fields.forEach(function (field) {
+
+                if (field) {
+                    field.type = checkbox.checked ? 'text' : 'password';
+                }
+
+            });
+
+        }
+
+
+        /**
+         * CLOSE MODAL WHEN CLICKING OUTSIDE
+         */
+        document.addEventListener('click', function (event) {
+
+            const modal = document.getElementById('passwordModal');
+
+            if (modal && event.target === modal) {
+                closePasswordModal();
+            }
+
+        });
+
+
+        /**
+         * OPEN MODAL IF VALIDATION ERROR
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const hasPasswordErrors =
+                document.getElementById('passwordModal')
+                    ?.querySelector('.bg-red-50') !== null;
+
+            if (hasPasswordErrors) {
+                openPasswordModal();
+            }
+
+        });
+
+    </script>
 
 </body>
 </html>
