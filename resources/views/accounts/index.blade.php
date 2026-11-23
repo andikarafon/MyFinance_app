@@ -1,25 +1,43 @@
-
 <x-finance-layout>
     <x-slot name="title">Master Rekening</x-slot>
 
-    <!-- SUMMARY -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+    {{-- SUMMARY --}}
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;" class="mb-6">
 
+        {{-- TOTAL SALDO SAAT INI --}}
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <div class="text-sm text-gray-500">Total Saldo Awal</div>
-            <div class="text-2xl font-bold text-gray-800 mt-2">
-                Rp {{ number_format($totalBalance, 0, ',', '.') }}
+            <div class="text-sm text-gray-500">Total Saldo Saat Ini</div>
+
+            <div class="text-2xl font-bold text-emerald-600 mt-2">
+                Rp {{ number_format($accounts->where('is_active', true)->sum(fn ($account) => $account->current_balance), 0, ',', '.') }}
             </div>
+
             <div class="text-xs text-gray-400 mt-2">
-                Total rekening aktif
+                Total saldo seluruh rekening aktif
             </div>
         </div>
 
+        {{-- TOTAL SALDO AWAL --}}
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div class="text-sm text-gray-500">Total Saldo Awal</div>
+
+            <div class="text-2xl font-bold text-gray-800 mt-2">
+                Rp {{ number_format($totalBalance, 0, ',', '.') }}
+            </div>
+
+            <div class="text-xs text-gray-400 mt-2">
+                Total saldo awal rekening
+            </div>
+        </div>
+
+        {{-- JUMLAH REKENING --}}
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <div class="text-sm text-gray-500">Jumlah Rekening</div>
-            <div class="text-2xl font-bold text-emerald-600 mt-2">
+
+            <div class="text-2xl font-bold text-indigo-600 mt-2">
                 {{ $accounts->where('is_active', true)->count() }}
             </div>
+
             <div class="text-xs text-gray-400 mt-2">
                 Rekening aktif
             </div>
@@ -28,7 +46,7 @@
     </div>
 
 
-    <!-- ALERT SUCCESS -->
+    {{-- ALERT SUCCESS --}}
     @if(session('success'))
         <div class="mb-5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg">
             {{ session('success') }}
@@ -36,7 +54,7 @@
     @endif
 
 
-    <!-- ACCOUNT TABLE -->
+    {{-- ACCOUNT TABLE --}}
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
 
         <div class="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -47,7 +65,7 @@
                 </h3>
 
                 <p class="text-sm text-gray-500 mt-1">
-                    Kelola rekening dan saldo awal Anda.
+                    Kelola rekening, saldo awal, dan saldo saat ini.
                 </p>
             </div>
 
@@ -73,6 +91,7 @@
                         <th class="px-6 py-4">Jenis</th>
                         <th class="px-6 py-4">Nomor / Bank</th>
                         <th class="px-6 py-4 text-right">Saldo Awal</th>
+                        <th class="px-6 py-4 text-right">Saldo Saat Ini</th>
                         <th class="px-6 py-4 text-center">Status</th>
                         <th class="px-6 py-4 text-center">Aksi</th>
                     </tr>
@@ -86,7 +105,7 @@
 
                         <tr class="hover:bg-gray-50">
 
-                            <!-- NAME -->
+                            {{-- NAME --}}
                             <td class="px-6 py-4">
 
                                 <div class="font-medium text-gray-800">
@@ -102,17 +121,19 @@
                             </td>
 
 
-                            <!-- TYPE -->
+                            {{-- TYPE --}}
                             <td class="px-6 py-4">
 
                                 @if($account->type === 'cash')
                                     <span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">
                                         Cash
                                     </span>
+
                                 @elseif($account->type === 'bank')
                                     <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
                                         Bank
                                     </span>
+
                                 @else
                                     <span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
                                         E-Wallet
@@ -122,7 +143,7 @@
                             </td>
 
 
-                            <!-- BANK INFORMATION -->
+                            {{-- BANK INFORMATION --}}
                             <td class="px-6 py-4 text-gray-500">
 
                                 @if($account->bank_name)
@@ -142,13 +163,23 @@
                             </td>
 
 
-                            <!-- BALANCE -->
-                            <td class="px-6 py-4 text-right font-semibold text-gray-800">
+                            {{-- OPENING BALANCE --}}
+                            <td class="px-6 py-4 text-right font-medium text-gray-700 whitespace-nowrap">
                                 Rp {{ number_format((float) $account->opening_balance, 0, ',', '.') }}
                             </td>
 
 
-                            <!-- STATUS -->
+                            {{-- CURRENT BALANCE --}}
+                            <td class="px-6 py-4 text-right font-semibold whitespace-nowrap">
+
+                                <span class="{{ $account->current_balance < 0 ? 'text-red-600' : 'text-emerald-600' }}">
+                                    Rp {{ number_format($account->current_balance, 0, ',', '.') }}
+                                </span>
+
+                            </td>
+
+
+                            {{-- STATUS --}}
                             <td class="px-6 py-4 text-center">
 
                                 @if($account->is_active)
@@ -164,7 +195,7 @@
                             </td>
 
 
-                            <!-- ACTION -->
+                            {{-- ACTION --}}
                             <td class="px-6 py-4">
 
                                 <div class="flex justify-center items-center gap-3">
@@ -197,7 +228,7 @@
                     @empty
 
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
 
                                 <div class="text-gray-400 text-4xl mb-3">
                                     ▣

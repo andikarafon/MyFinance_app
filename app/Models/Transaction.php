@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,16 +28,25 @@ class Transaction extends Model
         ];
     }
 
+    /**
+     * Relasi ke User.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Relasi rekening asal.
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
     }
 
+    /**
+     * Relasi rekening tujuan transfer.
+     */
     public function destinationAccount(): BelongsTo
     {
         return $this->belongsTo(
@@ -45,8 +55,35 @@ class Transaction extends Model
         );
     }
 
+    /**
+     * Relasi kategori transaksi.
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Scope transaksi pemasukan.
+     */
+    public function scopeIncome(Builder $query): Builder
+    {
+        return $query->where('type', 'income');
+    }
+
+    /**
+     * Scope transaksi pengeluaran.
+     */
+    public function scopeExpense(Builder $query): Builder
+    {
+        return $query->where('type', 'expense');
+    }
+
+    /**
+     * Scope transaksi transfer.
+     */
+    public function scopeTransfer(Builder $query): Builder
+    {
+        return $query->where('type', 'transfer');
     }
 }
