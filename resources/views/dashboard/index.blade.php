@@ -12,7 +12,10 @@
 
     <div class="space-y-6">
 
+        {{-- ========================================= --}}
         {{-- SUMMARY CARDS --}}
+        {{-- ========================================= --}}
+
         <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
 
             {{-- TOTAL SALDO --}}
@@ -39,7 +42,7 @@
             </div>
 
 
-            {{-- PEMASUKAN --}}
+            {{-- TOTAL PEMASUKAN --}}
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
 
                 <div class="flex items-center justify-between">
@@ -63,7 +66,7 @@
             </div>
 
 
-            {{-- PENGELUARAN --}}
+            {{-- TOTAL PENGELUARAN --}}
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
 
                 <div class="flex items-center justify-between">
@@ -113,7 +116,10 @@
         </div>
 
 
+        {{-- ========================================= --}}
         {{-- GRAFIK DAN SALDO REKENING --}}
+        {{-- ========================================= --}}
+
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
             {{-- GRAFIK KEUANGAN --}}
@@ -131,6 +137,7 @@
                         </p>
                     </div>
 
+                    {{-- LEGEND --}}
                     <div class="flex items-center gap-4 text-xs">
 
                         <div class="flex items-center gap-2">
@@ -146,8 +153,6 @@
                     </div>
 
                 </div>
-
-
 
 
                 {{-- CHART DATA --}}
@@ -171,6 +176,7 @@
                             <div class="text-xs font-semibold text-gray-700">
                                 {{ $item['month'] }}
                             </div>
+
 
                             {{-- PEMASUKAN --}}
                             <div class="flex items-center gap-3">
@@ -220,14 +226,7 @@
                 </div>
 
 
-                @if($chartData->sum('income') == 0 && $chartData->sum('expense') == 0)
-                    <div class="text-center text-xs text-gray-400 mt-6">
-                        Belum ada data pemasukan atau pengeluaran.
-                    </div>
-                @endif
-
-
-
+                {{-- EMPTY CHART --}}
                 @if($chartData->sum('income') == 0 && $chartData->sum('expense') == 0)
 
                     <div class="text-center text-xs text-gray-400 mt-6">
@@ -239,7 +238,10 @@
             </div>
 
 
+            {{-- ========================================= --}}
             {{-- SALDO REKENING --}}
+            {{-- ========================================= --}}
+
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 
                 <div class="flex items-center justify-between">
@@ -309,7 +311,10 @@
         </div>
 
 
+        {{-- ========================================= --}}
         {{-- TRANSAKSI TERAKHIR --}}
+        {{-- ========================================= --}}
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200">
 
             <div class="p-5 border-b border-gray-100 flex items-center justify-between">
@@ -481,6 +486,5 @@
         </div>
 
     </div>
-
 
 </x-finance-layout>
