@@ -10,6 +10,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\ReportController;
 
 
 Route::get('/', function () {
@@ -218,6 +219,14 @@ Route::middleware(['auth'])->group(function () {
     
     //BUDGETS
     Route::resource('budgets', BudgetController::class)->except(['show']);
+
+    // LAPORAN KEUANGAN
+    Route::get('/reports', [ReportController::class, 'index'])
+        ->name('reports.index');
+
+    // PREVIEW CETAK LAPORAN
+    Route::get('/reports/print', [ReportController::class, 'print'])
+        ->name('reports.print');
 
 
     // TRANSAKSI
