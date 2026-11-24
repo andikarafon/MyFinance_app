@@ -22,30 +22,7 @@
     @endphp
 
     <style>
-        /* ==============================
-           SUMMARY CARDS
-        ============================== */
-        .budget-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            width: 100%;
-        }
-
-        /* ==============================
-           DETAIL ANGGARAN
-        ============================== */
-        .budget-detail-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            width: 100%;
-            margin-top: 16px;
-        }
-
-        /* ==============================
-           HEADER BUTTON
-        ============================== */
+        /* HEADER BUTTON */
         .budget-add-button {
             display: inline-flex;
             align-items: center;
@@ -67,9 +44,41 @@
             background-color: #334155;
         }
 
-        /* ==============================
-           RESPONSIVE
-        ============================== */
+        /* SUMMARY CARDS */
+        .budget-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* BUDGET DETAILS */
+        .budget-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        /* PROGRESS BAR */
+        .budget-progress-track {
+            width: 100%;
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .budget-progress-fill {
+            display: block;
+            width: 0;
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        /* RESPONSIVE */
         @media (max-width: 767px) {
             .budget-summary-grid {
                 grid-template-columns: 1fr;
@@ -86,9 +95,7 @@
 
     <div class="space-y-6">
 
-        {{-- ==========================================
-             HEADER
-        =========================================== --}}
+        {{-- HEADER --}}
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
@@ -105,17 +112,13 @@
                class="budget-add-button">
 
                 <span style="font-size: 20px; line-height: 1;">+</span>
-
                 <span>Tambah Anggaran</span>
 
             </a>
 
         </div>
 
-
-        {{-- ==========================================
-             NOTIFICATION
-        =========================================== --}}
+        {{-- NOTIFICATION --}}
         @if (session('success'))
             <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                 {{ session('success') }}
@@ -132,23 +135,20 @@
             </div>
         @endif
 
-
-        {{-- ==========================================
-             FILTER PERIODE
-        =========================================== --}}
+        {{-- FILTER PERIODE --}}
         <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
 
             <form method="GET"
                   action="{{ route('budgets.index') }}"
                   class="flex flex-col gap-3 sm:flex-row sm:items-end">
 
-                {{-- BULAN --}}
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">
+                    <label for="month" class="mb-1 block text-sm font-medium text-gray-700">
                         Bulan
                     </label>
 
                     <select name="month"
+                            id="month"
                             class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 sm:w-48">
 
                         @foreach ($monthNames as $number => $name)
@@ -161,14 +161,14 @@
                     </select>
                 </div>
 
-                {{-- TAHUN --}}
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">
+                    <label for="year" class="mb-1 block text-sm font-medium text-gray-700">
                         Tahun
                     </label>
 
                     <input type="number"
                            name="year"
+                           id="year"
                            value="{{ $year }}"
                            min="2000"
                            max="2100"
@@ -184,10 +184,7 @@
 
         </div>
 
-
-        {{-- ==========================================
-             SUMMARY CARDS
-        =========================================== --}}
+        {{-- SUMMARY CARDS --}}
         <div class="budget-summary-grid">
 
             {{-- TOTAL ANGGARAN --}}
@@ -207,7 +204,6 @@
 
             </div>
 
-
             {{-- TOTAL REALISASI --}}
             <div class="min-w-0 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
 
@@ -224,7 +220,6 @@
                 </p>
 
             </div>
-
 
             {{-- SISA ANGGARAN --}}
             <div class="min-w-0 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -245,10 +240,7 @@
 
         </div>
 
-
-        {{-- ==========================================
-             BUDGET LIST
-        =========================================== --}}
+        {{-- BUDGET LIST --}}
         <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
 
             {{-- LIST HEADER --}}
@@ -264,29 +256,27 @@
 
             </div>
 
-
             {{-- BUDGET DATA --}}
             @forelse ($budgets as $budget)
 
                 @php
                     $percentage = (float) $budget->percentage;
-                    $progressWidth = min($percentage, 100);
+                    $progressWidth = min(max($percentage, 0), 100);
 
                     if ($percentage >= 100) {
-                        $progressColor = 'bg-red-500';
                         $statusColor = 'text-red-600 bg-red-50';
                         $statusText = 'Melebihi Anggaran';
+                        $progressColor = '#ef4444';
                     } elseif ($percentage >= 80) {
-                        $progressColor = 'bg-yellow-500';
                         $statusColor = 'text-yellow-700 bg-yellow-50';
                         $statusText = 'Mendekati Batas';
+                        $progressColor = '#eab308';
                     } else {
-                        $progressColor = 'bg-green-500';
                         $statusColor = 'text-green-700 bg-green-50';
                         $statusText = 'Aman';
+                        $progressColor = '#22c55e';
                     }
                 @endphp
-
 
                 {{-- BUDGET ITEM --}}
                 <div class="border-b border-gray-100 px-5 py-5 last:border-b-0">
@@ -310,7 +300,6 @@
 
                             </div>
 
-
                             {{-- DETAIL ANGGARAN: 3 KOLOM --}}
                             <div class="budget-detail-grid">
 
@@ -327,7 +316,6 @@
 
                                 </div>
 
-
                                 {{-- REALISASI --}}
                                 <div class="min-w-0">
 
@@ -340,7 +328,6 @@
                                     </p>
 
                                 </div>
-
 
                                 {{-- SISA ANGGARAN --}}
                                 <div class="min-w-0">
@@ -357,53 +344,36 @@
 
                             </div>
 
-
                             {{-- PROGRESS BAR --}}
-                            <div style="margin-top: 20px; width: 100%;">
+                            <div class="mt-5 w-full">
 
-                                <div style="
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: space-between;
-                                    margin-bottom: 8px;
-                                ">
-                                    <span style="font-size: 12px; color: #64748b;">
+                                <div class="mb-2 flex items-center justify-between">
+
+                                    <span class="text-xs text-gray-500">
                                         Pemakaian Anggaran
                                     </span>
 
-                                    <span style="
-                                        font-size: 12px;
-                                        font-weight: 600;
-                                        color: #334155;
-                                    ">
+                                    <span class="text-xs font-semibold text-gray-700">
                                         {{ number_format($percentage, 1, ',', '.') }}%
                                     </span>
+
                                 </div>
 
                                 {{-- PROGRESS TRACK --}}
-                                <div style="
-                                    width: 100%;
-                                    height: 10px;
-                                    background-color: #e5e7eb;
-                                    border-radius: 999px;
-                                    overflow: hidden;
-                                ">
+                                <div class="budget-progress-track">
 
                                     {{-- PROGRESS VALUE --}}
-                                    <div style="
-                                        width: {{ $progressWidth }}%;
-                                        height: 100%;
-                                        background-color: {{ $percentage >= 100 ? '#ef4444' : ($percentage >= 80 ? '#eab308' : '#22c55e') }};
-                                        border-radius: 999px;
-                                        transition: width 0.4s ease;
-                                    "></div>
+                                    <div
+                                        class="budget-progress-fill"
+                                        data-progress="{{ $progressWidth }}"
+                                        data-color="{{ $progressColor }}"
+                                    ></div>
 
                                 </div>
 
                             </div>
 
                         </div>
-
 
                         {{-- ACTION BUTTONS --}}
                         <div class="flex shrink-0 items-center gap-2 lg:justify-end">
@@ -413,7 +383,6 @@
                                class="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50">
                                 Edit
                             </a>
-
 
                             {{-- DELETE --}}
                             <form method="POST"
@@ -436,10 +405,9 @@
 
                 </div>
 
-
-            {{-- EMPTY STATE --}}
             @empty
 
+                {{-- EMPTY STATE --}}
                 <div class="px-5 py-14 text-center">
 
                     <div class="text-4xl">
@@ -458,7 +426,6 @@
                        class="budget-add-button mt-4">
 
                         <span style="font-size: 20px; line-height: 1;">+</span>
-
                         <span>Tambah Anggaran</span>
 
                     </a>
@@ -470,5 +437,26 @@
         </div>
 
     </div>
+
+    {{-- PROGRESS BAR JAVASCRIPT --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const progressBars = document.querySelectorAll('.budget-progress-fill');
+
+            progressBars.forEach(function (bar) {
+
+                const progress = parseFloat(bar.dataset.progress) || 0;
+                const color = bar.dataset.color || '#22c55e';
+
+                const safeProgress = Math.min(Math.max(progress, 0), 100);
+
+                bar.style.width = safeProgress + '%';
+                bar.style.backgroundColor = color;
+
+            });
+
+        });
+    </script>
 
 </x-finance-layout>

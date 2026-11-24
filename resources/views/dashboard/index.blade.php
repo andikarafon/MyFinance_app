@@ -1,3 +1,4 @@
+
 <x-finance-layout>
     <x-slot name="title">
         Dashboard
@@ -9,6 +10,71 @@
 
         $currentMonth = now()->translatedFormat('F Y');
     @endphp
+
+    <style>
+        /* =========================================
+           SUMMARY ANGGARAN
+        ========================================= */
+
+        .dashboard-budget-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-budget-summary-card {
+            min-width: 0;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: #ffffff;
+        }
+
+        .dashboard-budget-summary-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-budget-summary-value {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        /* =========================================
+           PROGRESS BAR
+        ========================================= */
+
+        .dashboard-progress-track {
+            width: 100%;
+            height: 10px;
+            background-color: #f3f4f6;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .dashboard-progress-fill {
+            display: block;
+            width: 0;
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 640px) {
+            .dashboard-budget-summary-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
 
     <div class="space-y-6">
 
@@ -117,6 +183,213 @@
 
 
         {{-- ========================================= --}}
+        {{-- RINGKASAN DAN NOTIFIKASI ANGGARAN --}}
+        {{-- ========================================= --}}
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+
+                <div>
+                    <h3 class="font-semibold text-gray-800">
+                        Monitoring Anggaran Bulanan
+                    </h3>
+
+                    <p class="text-sm text-gray-400 mt-1">
+                        {{ now()->translatedFormat('F Y') }}
+                    </p>
+                </div>
+
+                <a href="{{ route('budgets.index') }}"
+                   class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                    Lihat Anggaran →
+                </a>
+
+            </div>
+
+
+            {{-- SUMMARY ANGGARAN --}}
+
+            <div class="dashboard-budget-summary-grid">
+
+                {{-- TOTAL ANGGARAN --}}
+                <div class="dashboard-budget-summary-card">
+
+                    <p class="dashboard-budget-summary-label">
+                        Total Anggaran
+                    </p>
+
+                    <p class="dashboard-budget-summary-value" style="color: #1e293b;">
+                        {{ $formatCurrency($totalBudgetDashboard) }}
+                    </p>
+
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
+                        Batas anggaran bulan ini
+                    </p>
+
+                </div>
+
+
+                {{-- TOTAL REALISASI --}}
+                <div class="dashboard-budget-summary-card">
+
+                    <p class="dashboard-budget-summary-label">
+                        Total Realisasi
+                    </p>
+
+                    <p class="dashboard-budget-summary-value" style="color: #dc2626;">
+                        {{ $formatCurrency($totalBudgetRealization) }}
+                    </p>
+
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
+                        Pengeluaran tercatat
+                    </p>
+
+                </div>
+
+
+                {{-- SISA ANGGARAN --}}
+                <div class="dashboard-budget-summary-card">
+
+                    <p class="dashboard-budget-summary-label">
+                        Sisa Anggaran
+                    </p>
+
+                    <p class="dashboard-budget-summary-value {{ $totalBudgetRemaining < 0 ? 'text-red-600' : 'text-green-600' }}">
+                        {{ $formatCurrency($totalBudgetRemaining) }}
+                    </p>
+
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 6px;">
+                        Anggaran dikurangi realisasi
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {{-- NOTIFIKASI --}}
+
+            @if ($budgetAlerts->isNotEmpty())
+
+                <div class="space-y-4">
+
+                    @foreach ($budgetAlerts as $budget)
+
+                        @php
+                            $percentage = (float) $budget->percentage;
+                            $progressWidth = min(max($percentage, 0), 100);
+
+                            if ($percentage >= 100) {
+                                $statusText = 'Melebihi Anggaran';
+                                $statusColor = 'text-red-700 bg-red-50';
+                                $progressColor = '#ef4444';
+                            } elseif ($percentage >= 80) {
+                                $statusText = 'Mendekati Batas';
+                                $statusColor = 'text-yellow-700 bg-yellow-50';
+                                $progressColor = '#eab308';
+                            } else {
+                                $statusText = 'Aman';
+                                $statusColor = 'text-green-700 bg-green-50';
+                                $progressColor = '#22c55e';
+                            }
+                        @endphp
+
+                        <div class="border border-gray-100 rounded-lg p-4">
+
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+                                <div>
+                                    <p class="font-medium text-sm text-gray-800">
+                                        {{ $budget->category->icon ?? '📁' }}
+                                        {{ $budget->category->name ?? 'Kategori tidak tersedia' }}
+                                    </p>
+
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Realisasi:
+                                        {{ $formatCurrency($budget->realization) }}
+                                        dari
+                                        {{ $formatCurrency($budget->amount) }}
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+
+                                    <span class="text-sm font-semibold text-gray-700">
+                                        {{ number_format($percentage, 1, ',', '.') }}%
+                                    </span>
+
+                                    <span class="rounded-full px-3 py-1 text-xs font-medium {{ $statusColor }}">
+                                        {{ $statusText }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            {{-- PROGRESS BAR --}}
+
+                            <div class="dashboard-progress-track mt-3">
+
+                                <div
+                                    class="dashboard-progress-fill js-dashboard-progress"
+                                    data-progress="{{ number_format($progressWidth, 2, '.', '') }}"
+                                    data-color="{{ $progressColor }}"
+                                ></div>
+
+                            </div>
+
+
+                            <div class="flex justify-between mt-2 text-xs text-gray-400">
+
+                                <span>
+                                    Sisa:
+                                    {{ $formatCurrency($budget->remaining) }}
+                                </span>
+
+                                <span>
+                                    Anggaran:
+                                    {{ $formatCurrency($budget->amount) }}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    @endforeach
+
+                </div>
+
+            @else
+
+                <div class="rounded-lg border border-dashed border-gray-300 py-8 text-center">
+
+                    <div class="text-3xl mb-2">
+                        📊
+                    </div>
+
+                    <p class="font-medium text-gray-700">
+                        Belum Ada Anggaran
+                    </p>
+
+                    <p class="text-sm text-gray-400 mt-1">
+                        Belum ada anggaran yang dibuat untuk bulan ini.
+                    </p>
+
+                    <a href="{{ route('budgets.create') }}"
+                       class="inline-block mt-4 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700">
+                        Tambah Anggaran
+                    </a>
+
+                </div>
+
+            @endif
+
+        </div>
+
+
+        {{-- ========================================= --}}
         {{-- GRAFIK DAN SALDO REKENING --}}
         {{-- ========================================= --}}
 
@@ -137,7 +410,9 @@
                         </p>
                     </div>
 
+
                     {{-- LEGEND --}}
+
                     <div class="flex items-center gap-4 text-xs">
 
                         <div class="flex items-center gap-2">
@@ -156,6 +431,7 @@
 
 
                 {{-- CHART DATA --}}
+
                 <div class="mt-8 space-y-6">
 
                     @foreach($chartData as $item)
@@ -168,17 +444,22 @@
                             $expenseHeight = $chartMax > 0
                                 ? ($item['expense'] / $chartMax) * 100
                                 : 0;
+
+                            $incomeBarWidth = min(max($incomeHeight, 0), 100);
+                            $expenseBarWidth = min(max($expenseHeight, 0), 100);
                         @endphp
 
                         <div class="space-y-2">
 
                             {{-- BULAN --}}
+
                             <div class="text-xs font-semibold text-gray-700">
                                 {{ $item['month'] }}
                             </div>
 
 
                             {{-- PEMASUKAN --}}
+
                             <div class="flex items-center gap-3">
 
                                 <div class="w-24 text-xs text-gray-500 shrink-0">
@@ -187,8 +468,12 @@
 
                                 <div style="flex: 1; height: 16px; background-color: #f3f4f6; border-radius: 999px; overflow: hidden;">
 
-                                    <div style="width: {{ number_format($incomeHeight, 2, '.', '') }}%; height: 16px; background-color: #10b981; border-radius: 999px; min-width: {{ $item['income'] > 0 ? '4px' : '0' }};">
-                                    </div>
+                                    <div
+                                        class="dashboard-progress-fill js-dashboard-progress"
+                                        data-progress="{{ number_format($incomeBarWidth, 2, '.', '') }}"
+                                        data-color="#10b981"
+                                        data-min-width="{{ $item['income'] > 0 ? '4' : '0' }}"
+                                    ></div>
 
                                 </div>
 
@@ -200,6 +485,7 @@
 
 
                             {{-- PENGELUARAN --}}
+
                             <div class="flex items-center gap-3">
 
                                 <div class="w-24 text-xs text-gray-500 shrink-0">
@@ -208,8 +494,12 @@
 
                                 <div style="flex: 1; height: 16px; background-color: #f3f4f6; border-radius: 999px; overflow: hidden;">
 
-                                    <div style="width: {{ number_format($expenseHeight, 2, '.', '') }}%; height: 16px; background-color: #f87171; border-radius: 999px; min-width: {{ $item['expense'] > 0 ? '4px' : '0' }};">
-                                    </div>
+                                    <div
+                                        class="dashboard-progress-fill js-dashboard-progress"
+                                        data-progress="{{ number_format($expenseBarWidth, 2, '.', '') }}"
+                                        data-color="#f87171"
+                                        data-min-width="{{ $item['expense'] > 0 ? '4' : '0' }}"
+                                    ></div>
 
                                 </div>
 
@@ -227,6 +517,7 @@
 
 
                 {{-- EMPTY CHART --}}
+
                 @if($chartData->sum('income') == 0 && $chartData->sum('expense') == 0)
 
                     <div class="text-center text-xs text-gray-400 mt-6">
@@ -362,12 +653,14 @@
                             <tr class="hover:bg-gray-50">
 
                                 {{-- TANGGAL --}}
+
                                 <td class="px-5 py-4 text-gray-500 whitespace-nowrap">
                                     {{ $transaction->transaction_date->format('d/m/Y') }}
                                 </td>
 
 
                                 {{-- DESKRIPSI --}}
+
                                 <td class="px-5 py-4">
 
                                     <div class="font-medium text-gray-800">
@@ -384,6 +677,7 @@
 
 
                                 {{-- KATEGORI --}}
+
                                 <td class="px-5 py-4 text-gray-600">
 
                                     @if($transaction->category)
@@ -405,6 +699,7 @@
 
 
                                 {{-- REKENING --}}
+
                                 <td class="px-5 py-4 text-gray-600">
 
                                     @if($transaction->type === 'transfer')
@@ -427,6 +722,7 @@
 
 
                                 {{-- JENIS --}}
+
                                 <td class="px-5 py-4">
 
                                     @if($transaction->type === 'income')
@@ -453,6 +749,7 @@
 
 
                                 {{-- NOMINAL --}}
+
                                 <td class="px-5 py-4 text-right font-semibold whitespace-nowrap">
 
                                     <span class="{{ $transaction->type === 'income' ? 'text-emerald-600' : ($transaction->type === 'expense' ? 'text-red-500' : 'text-indigo-600') }}">
@@ -486,5 +783,53 @@
         </div>
 
     </div>
+
+
+    {{-- ========================================= --}}
+    {{-- DASHBOARD PROGRESS BAR SCRIPT --}}
+    {{-- ========================================= --}}
+
+    <script>
+        (function () {
+
+            function initializeDashboardProgressBars() {
+
+                const progressBars = document.querySelectorAll(
+                    '.js-dashboard-progress'
+                );
+
+                progressBars.forEach(function (bar) {
+
+                    const progress = parseFloat(bar.dataset.progress) || 0;
+                    const color = bar.dataset.color || '#22c55e';
+                    const minWidth = parseFloat(bar.dataset.minWidth) || 0;
+
+                    const safeProgress = Math.min(
+                        Math.max(progress, 0),
+                        100
+                    );
+
+                    bar.style.width = safeProgress + '%';
+                    bar.style.backgroundColor = color;
+
+                    if (safeProgress > 0 && minWidth > 0) {
+                        bar.style.minWidth = minWidth + 'px';
+                    }
+
+                });
+
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener(
+                    'DOMContentLoaded',
+                    initializeDashboardProgressBars
+                );
+            } else {
+                initializeDashboardProgressBars();
+            }
+
+        })();
+    </script>
 
 </x-finance-layout>

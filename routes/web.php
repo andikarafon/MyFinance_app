@@ -5,10 +5,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Models\Budget;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BudgetController;
+
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -60,6 +62,71 @@ Route::middleware(['auth'])->group(function () {
                 $endOfMonth,
             ])
             ->sum('amount');
+
+        // =========================================
+        // DATA ANGGARAN BULAN BERJALAN
+        // =========================================
+
+        $budgetAlerts = Budget::with('category')
+        ->where('user_id', $userId)
+        ->where('month', $today->month)
+        ->where('year', $today->year)
+        ->orderBy('category_id')
+        ->get();
+
+        // AMBIL REALISASI PENGELUARAN PER KATEGORI
+        $budgetRealizations = collect();
+
+        if ($budgetAlerts->isNotEmpty()) {
+
+        $categoryIds = $budgetAlerts->pluck('category_id');
+
+        $budgetRealizations = Transaction::query()
+            ->where('user_id', $userId)
+            ->where('type', 'expense')
+            ->whereIn('category_id', $categoryIds)
+            ->whereBetween('transaction_date', [
+                $startOfMonth,
+                $endOfMonth,
+            ])
+            ->selectRaw('category_id, SUM(amount) as total')
+            ->groupBy('category_id')
+            ->get()
+            ->keyBy('category_id');
+        }
+
+        // HITUNG REALISASI, SISA, DAN PERSENTASE
+        foreach ($budgetAlerts as $budget) {
+
+        $realization = (float) (
+            $budgetRealizations->get($budget->category_id)->total ?? 0
+        );
+
+        $amount = (float) $budget->amount;
+
+        $budget->realization = $realization;
+        $budget->remaining = $amount - $realization;
+
+        $budget->percentage = $amount > 0
+            ? ($realization / $amount) * 100
+            : 0;
+        }
+
+        // RINGKASAN ANGGARAN
+        $totalBudgetDashboard = $budgetAlerts->sum(
+        fn ($item) => (float) $item->amount
+        );
+
+        $totalBudgetRealization = $budgetAlerts->sum(
+        fn ($item) => (float) $item->realization
+        );
+
+        $totalBudgetRemaining = $totalBudgetDashboard
+        - $totalBudgetRealization;
+
+        $budgetAlertCount = $budgetAlerts->filter(
+        fn ($item) => $item->percentage >= 80
+        )->count();
 
         // DATA TRANSAKSI ENAM BULAN TERAKHIR
         $chartStartDate = $today->copy()
@@ -129,7 +196,12 @@ Route::middleware(['auth'])->group(function () {
             'totalExpense',
             'chartData',
             'chartMax',
-            'latestTransactions'
+            'latestTransactions',
+            'budgetAlerts',
+            'totalBudgetDashboard',
+            'totalBudgetRealization',
+            'totalBudgetRemaining',
+            'budgetAlertCount',
         ));
 
     })->name('dashboard');

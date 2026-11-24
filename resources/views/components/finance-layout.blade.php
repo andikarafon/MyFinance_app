@@ -12,7 +12,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body
+    class="bg-slate-100 text-slate-800"
+    data-current-route="{{ request()->route() ? request()->route()->getName() : '' }}"
+>
 
     <div class="min-h-screen flex">
 
@@ -607,7 +610,7 @@
          */
         document.addEventListener('DOMContentLoaded', function () {
 
-            const currentRoute = @json(request()->route()?->getName());
+            const currentRoute = document.body.dataset.currentRoute || '';
 
             const transactionMenu = document.getElementById('transactionMenu');
             const transactionArrow = document.getElementById('transactionArrow');
