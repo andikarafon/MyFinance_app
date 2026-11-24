@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\BudgetController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -142,6 +143,9 @@ Route::middleware(['auth'])->group(function () {
     // MASTER KATEGORI
     Route::resource('categories', CategoryController::class)
         ->except(['show']);
+    
+    //BUDGETS
+    Route::resource('budgets', BudgetController::class)->except(['show']);
 
 
     // TRANSAKSI
