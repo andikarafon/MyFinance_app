@@ -194,30 +194,62 @@
                 </p>
             </div>
 
+            
+            <div class="flex flex-wrap items-center gap-2">
+
+            {{-- EXPORT EXCEL --}}
+            <a href="{{ route('reports.export', [
+                'month' => $month,
+                'year' => $year,
+                'account_id' => $selectedAccountId,
+            ]) }}"
+            class="inline-flex items-center justify-center min-h-[42px] px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2">
+
+                    <path stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3" />
+
+                </svg>
+
+                Export Excel
+
+            </a>
+
+            {{-- PREVIEW CETAK --}}
             <a href="{{ route('reports.print', [
                 'month' => $month,
                 'year' => $year,
                 'account_id' => $selectedAccountId,
             ]) }}"
-               target="_blank"
-               class="report-print-button">
+            target="_blank"
+            class="report-print-button">
 
                 <svg xmlns="http://www.w3.org/2000/svg"
-                     class="w-5 h-5 mr-2"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke="currentColor"
-                     stroke-width="2">
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2">
 
                     <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" />
+                        stroke-linejoin="round"
+                        d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z" />
 
                 </svg>
 
                 Preview Cetak
 
             </a>
+
+            </div>
+
 
         </div>
 

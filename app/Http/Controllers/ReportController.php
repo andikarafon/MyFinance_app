@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Exports\FinancialReportExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -112,6 +114,160 @@ class ReportController extends Controller
             'transactions',
         ));
     }
+
+
+    /**
+     * EXPORT LAPORAN KE EXCEL
+     */
+    public function exportExcel(Request $request)
+    {
+        $userId = Auth::id();
+
+        $validated = $request->validate([
+            'month' => ['nullable', 'integer', 'between:1,12'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+            'account_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('accounts', 'id')->where(
+                    fn ($query) => $query->where('user_id', $userId)
+                ),
+            ],
+        ]);
+
+        $month = (int) ($validated['month'] ?? now()->month);
+        $year = (int) ($validated['year'] ?? now()->year);
+        $selectedAccountId = $validated['account_id'] ?? null;
+
+        $startDate = Carbon::createFromDate($year, $month, 1)
+            ->startOfMonth();
+
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $accounts = Account::query()
+            ->where('user_id', $userId)
+            ->orderBy('name')
+            ->get();
+
+        $baseQuery = Transaction::query()
+            ->where('user_id', $userId)
+            ->whereIn('type', ['income', 'expense'])
+            ->whereBetween('transaction_date', [
+                $startDate->toDateString(),
+                $endDate->toDateString(),
+            ]);
+
+        if ($selectedAccountId) {
+            $baseQuery->where('account_id', $selectedAccountId);
+        }
+
+        $totalIncome = (float) (clone $baseQuery)
+            ->where('type', 'income')
+            ->sum('amount');
+
+        $totalExpense = (float) (clone $baseQuery)
+            ->where('type', 'expense')
+            ->sum('amount');
+
+        $transactions = (clone $baseQuery)
+            ->with(['account', 'category'])
+            ->orderBy('transaction_date')
+            ->orderBy('id')
+            ->get();
+
+        // HITUNG SALDO AWAL
+        if ($selectedAccountId) {
+            $selectedAccount = $accounts->firstWhere(
+                'id',
+                $selectedAccountId
+            );
+
+            $openingBalance = (float) (
+                $selectedAccount->opening_balance ?? 0
+            );
+
+            
+
+            $historicalIncome = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('account_id', $selectedAccountId)
+                ->where('type', 'income')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $historicalExpense = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('account_id', $selectedAccountId)
+                ->where('type', 'expense')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $historicalTransferOut = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('account_id', $selectedAccountId)
+                ->where('type', 'transfer')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $historicalTransferIn = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('destination_account_id', $selectedAccountId)
+                ->where('type', 'transfer')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $openingBalance +=
+                (float) $historicalIncome
+                - (float) $historicalExpense
+                - (float) $historicalTransferOut
+                + (float) $historicalTransferIn;
+
+            $accountName = $selectedAccount->name ?? 'Rekening';
+
+           
+
+        } else {
+            $openingBalance = (float) $accounts->sum('opening_balance');
+
+            $historicalIncome = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('type', 'income')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $historicalExpense = Transaction::query()
+                ->where('user_id', $userId)
+                ->where('type', 'expense')
+                ->where('transaction_date', '<', $startDate->toDateString())
+                ->sum('amount');
+
+            $openingBalance +=
+                (float) $historicalIncome
+                - (float) $historicalExpense;
+
+            $accountName = 'Semua Rekening';
+        }
+
+        $reportPeriod = $startDate->translatedFormat('F Y');
+
+
+        $export = new FinancialReportExport(
+            $transactions,
+            (float) $openingBalance,
+            $totalIncome,
+            $totalExpense,
+            $reportPeriod,
+            $accountName
+        );
+
+        $fileName = 'Laporan-Keuangan-'
+            . $year . '-'
+            . str_pad((string) $month, 2, '0', STR_PAD_LEFT)
+            . '.xlsx';
+
+        return Excel::download($export, $fileName);
+    }
+
 
     /**
      * PREVIEW CETAK LAPORAN
@@ -230,7 +386,8 @@ class ReportController extends Controller
                 - (float) $historicalExpense
                 - (float) $historicalTransferOut
                 + (float) $historicalTransferIn;
-
+            
+            
         } else {
 
             // SALDO AWAL SELURUH REKENING
@@ -265,7 +422,12 @@ class ReportController extends Controller
             + (float) $totalIncome
             - (float) $totalExpense;
 
+        
+
         $reportPeriod = $startDate->translatedFormat('F Y');
+
+           
+
 
         // KIRIM DATA KE HALAMAN PREVIEW
         return view('reports.print', compact(

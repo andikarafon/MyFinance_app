@@ -228,6 +228,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/print', [ReportController::class, 'print'])
         ->name('reports.print');
 
+    //export excel
+    Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])
+    ->name('reports.export');
+
 
     // TRANSAKSI
     Route::prefix('transactions')->name('transactions.')->group(function () {
