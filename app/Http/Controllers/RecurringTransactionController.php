@@ -119,27 +119,31 @@ class RecurringTransactionController extends Controller
             ->with('success', 'Jadwal transaksi berulang berhasil ditambahkan.');
     }
 
-    /**
-     * Detail jadwal dan histori.
-     */
-    public function show(RecurringTransaction $recurringTransaction)
-    {
-        $this->authorizeSchedule($recurringTransaction);
 
-        $recurringTransaction->load([
-            'account',
-            'category',
-        ]);
+        /**
+         * Menampilkan detail jadwal dan riwayat transaksi berulang.
+         */
+        public function show(RecurringTransaction $recurringTransaction)
+        {
+            $this->authorizeSchedule($recurringTransaction);
 
-        $logs = $recurringTransaction->logs()
-            ->orderByDesc('scheduled_date')
-            ->paginate(15);
+            $recurringTransaction->load([
+                'account',
+                'category',
+            ]);
 
-        return view('recurring-transactions.show', compact(
-            'recurringTransaction',
-            'logs'
-        ));
-    }
+            $logs = $recurringTransaction->logs()
+                ->with('transaction')
+                ->orderByDesc('scheduled_date')
+                ->orderByDesc('id')
+                ->paginate(15);
+
+            return view('recurring-transactions.show', [
+                'recurringTransaction' => $recurringTransaction,
+                'logs' => $logs,
+            ]);
+        }
+
 
 
         /**
