@@ -11,6 +11,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RecurringTransactionController;
 
 
 Route::get('/', function () {
@@ -273,6 +274,55 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
-});
+
+    // TRANSAKSI BERULANG
+    Route::prefix('recurring-transactions')
+        ->name('recurring-transactions.')
+        ->controller(RecurringTransactionController::class)
+        ->group(function () {
+
+            // DAFTAR JADWAL
+            Route::get('/', 'index')
+                ->name('index');
+
+            // TAMBAH JADWAL
+            Route::get('/create', 'create')
+                ->name('create');
+
+            Route::post('/', 'store')
+                ->name('store');
+
+            // KONFIRMASI DAN PEMBATALAN PENDING
+            Route::post('/logs/{log}/confirm', 'confirm')
+                ->name('confirm');
+
+            Route::post('/logs/{log}/cancel', 'cancel')
+                ->name('cancel');
+
+            // AKTIVASI JADWAL
+            Route::patch('/{recurringTransaction}/activate', 'activate')
+                ->name('activate');
+
+            Route::patch('/{recurringTransaction}/deactivate', 'deactivate')
+                ->name('deactivate');
+
+            // EDIT JADWAL
+            Route::get('/{recurringTransaction}/edit', 'edit')
+                ->name('edit');
+
+            Route::put('/{recurringTransaction}', 'update')
+                ->name('update');
+
+            // DETAIL JADWAL
+            Route::get('/{recurringTransaction}', 'show')
+                ->name('show');
+
+            // HAPUS JADWAL
+            Route::delete('/{recurringTransaction}', 'destroy')
+                ->name('destroy');
+        });
+
+
+    });
 
 require __DIR__.'/auth.php';

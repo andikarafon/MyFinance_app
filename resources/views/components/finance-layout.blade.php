@@ -214,8 +214,30 @@
 
                         </a>
 
-                    </div>
 
+                        {{-- TRANSAKSI BERULANG --}}
+                        <a href="{{ route('recurring-transactions.index') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition
+                        {{ request()->routeIs('recurring-transactions.*') ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="w-5 h-5 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2">
+
+                                <path stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+
+                            </svg>
+
+                            <span class="text-sm font-medium">
+                                Transaksi Berulang
+                            </span>
+                        </a>
+                    </div>
                 </div>
 
 
