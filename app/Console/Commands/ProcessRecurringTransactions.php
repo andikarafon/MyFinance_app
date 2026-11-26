@@ -8,39 +8,71 @@ use Throwable;
 
 class ProcessRecurringTransactions extends Command
 {
-    /**
-     * Nama command yang dijalankan melalui terminal.
-     */
-    protected $signature = 'recurring:process';
+    protected $signature = 'recurring:process
+                            {--schedule-id= : ID jadwal yang akan diproses}
+                            {--dry-run : Simulasi tanpa mengubah database}
+                            {--all : Memproses seluruh jadwal yang jatuh tempo}';
 
-    /**
-     * Deskripsi command.
-     */
     protected $description = 'Memproses jadwal transaksi berulang yang sudah jatuh tempo';
 
-    /**
-     * Eksekusi command.
-     */
-    public function handle(
-        RecurringTransactionService $service
-    ): int {
+    public function handle(RecurringTransactionService $service): int
+    {
+        $scheduleIdOption = $this->option('schedule-id');
+        $all = (bool) $this->option('all');
+        $dryRun = (bool) $this->option('dry-run');
 
-        $this->info('Memulai pemrosesan transaksi berulang...');
-        $this->newLine();
+        // Harus memilih salah satu: schedule-id atau all.
+        if (
+            ($scheduleIdOption && $all)
+            || (!$scheduleIdOption && !$all)
+        ) {
+            $this->error(
+                'Tentukan salah satu opsi: --schedule-id=ID atau --all.'
+            );
+
+            return self::INVALID;
+        }
+
+        $scheduleId = null;
+
+        if ($scheduleIdOption !== null) {
+            $validatedId = filter_var(
+                $scheduleIdOption,
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
+
+            if ($validatedId === false) {
+                $this->error('Schedule ID harus berupa angka positif.');
+
+                return self::INVALID;
+            }
+
+            $scheduleId = (int) $validatedId;
+        }
 
         try {
-            $result = $service->processDueSchedules();
+            $this->info(
+                $dryRun
+                    ? 'Memulai simulasi transaksi berulang...'
+                    : 'Memulai pemrosesan transaksi berulang...'
+            );
 
-            $this->info('Pemrosesan selesai.');
             $this->newLine();
+
+            if ($dryRun) {
+                $result = $service->previewDueSchedules($scheduleId);
+            } else {
+                $result = $service->processDueSchedules($scheduleId);
+            }
 
             $this->table(
                 ['Keterangan', 'Jumlah'],
                 [
                     ['Jadwal diproses', $result['schedules_processed']],
-                    ['Transaksi berhasil dibuat', $result['generated']],
-                    ['Menunggu konfirmasi', $result['pending']],
-                    ['Gagal diproses', $result['failed']],
+                    ['Transaksi berhasil dibuat / calon transaksi', $result['generated']],
+                    ['Menunggu konfirmasi / calon Pending', $result['pending']],
+                    ['Gagal diproses / calon Failed', $result['failed']],
                     ['Duplikasi dilewati', $result['duplicates_skipped']],
                     ['Kesalahan teknis', $result['errors']],
                 ]
@@ -56,14 +88,27 @@ class ProcessRecurringTransactions extends Command
                 return self::FAILURE;
             }
 
-            $this->info(
-                'Semua proses selesai tanpa kesalahan teknis.'
-            );
+            if ($result['schedules_processed'] === 0) {
+                $this->warn(
+                    'Tidak ditemukan jadwal aktif yang sudah jatuh tempo.'
+                );
+
+                return self::SUCCESS;
+            }
+
+            if ($dryRun) {
+                $this->info(
+                    'Simulasi selesai. Tidak ada perubahan pada database.'
+                );
+            } else {
+                $this->info(
+                    'Pemrosesan transaksi berulang selesai.'
+                );
+            }
 
             return self::SUCCESS;
 
         } catch (Throwable $exception) {
-
             report($exception);
 
             $this->error(

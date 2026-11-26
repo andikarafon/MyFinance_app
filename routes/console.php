@@ -19,7 +19,7 @@ Artisan::command('inspire', function () {
 |
 */
 
-Schedule::command('recurring:process')
+Schedule::command('recurring:process --all')
     ->dailyAt('00:05')
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping(10);

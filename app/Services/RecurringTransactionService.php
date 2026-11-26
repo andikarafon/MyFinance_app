@@ -13,49 +13,157 @@ use Throwable;
 
 class RecurringTransactionService
 {
-    /**
-     * Memproses seluruh jadwal aktif yang sudah jatuh tempo.
-     */
-    public function processDueSchedules(): array
-    {
-        $result = [
-            'schedules_processed' => 0,
-            'generated' => 0,
-            'pending' => 0,
-            'failed' => 0,
-            'duplicates_skipped' => 0,
-            'errors' => 0,
-        ];
+        /**
+         * Memproses jadwal aktif yang sudah jatuh tempo.
+         *
+         * Jika $scheduleId diisi, hanya jadwal tersebut yang diproses.
+         * Jika null, seluruh jadwal aktif yang jatuh tempo diproses.
+         */
+        public function processDueSchedules(?int $scheduleId = null): array
+        {
+            $result = [
+                'schedules_processed' => 0,
+                'generated' => 0,
+                'pending' => 0,
+                'failed' => 0,
+                'duplicates_skipped' => 0,
+                'errors' => 0,
+            ];
 
-        $today = Carbon::today();
+            $today = Carbon::today();
 
-        $scheduleIds = RecurringTransaction::query()
-            ->active()
-            ->due()
-            ->orderBy('id')
-            ->pluck('id');
+            $query = RecurringTransaction::query()
+                ->active()
+                ->due()
+                ->orderBy('id');
 
-        foreach ($scheduleIds as $scheduleId) {
-            try {
-                $scheduleResult = $this->processSchedule(
-                    (int) $scheduleId,
-                    $today
-                );
-
-                foreach ($scheduleResult as $key => $value) {
-                    $result[$key] += $value;
-                }
-            } catch (Throwable $exception) {
-                // Kegagalan teknis tidak mengubah next_run_date.
-                // Jadwal dapat dicoba kembali pada eksekusi berikutnya.
-                report($exception);
-
-                $result['errors']++;
+            if ($scheduleId !== null) {
+                $query->whereKey($scheduleId);
             }
+
+            $scheduleIds = $query->pluck('id');
+
+            foreach ($scheduleIds as $id) {
+                try {
+                    $scheduleResult = $this->processSchedule(
+                        (int) $id,
+                        $today
+                    );
+
+                    foreach ($scheduleResult as $key => $value) {
+                        $result[$key] += $value;
+                    }
+                } catch (Throwable $exception) {
+                    report($exception);
+                    $result['errors']++;
+                }
+            }
+
+            return $result;
         }
 
-        return $result;
-    }
+        /**
+         * Simulasi pemrosesan jadwal tanpa mengubah database.
+         *
+         * Tidak membuat transaksi atau log.
+         * Tidak mengubah next_run_date.
+         */
+        public function previewDueSchedules(?int $scheduleId = null): array
+        {
+            $result = [
+                'schedules_processed' => 0,
+                'generated' => 0,
+                'pending' => 0,
+                'failed' => 0,
+                'duplicates_skipped' => 0,
+                'errors' => 0,
+            ];
+
+            $today = Carbon::today();
+
+            $query = RecurringTransaction::query()
+                ->active()
+                ->due()
+                ->orderBy('id');
+
+            if ($scheduleId !== null) {
+                $query->whereKey($scheduleId);
+            }
+
+            $scheduleIds = $query->pluck('id');
+
+            foreach ($scheduleIds as $id) {
+                try {
+                    $schedule = RecurringTransaction::query()
+                        ->whereKey($id)
+                        ->first();
+
+                    if (!$schedule) {
+                        continue;
+                    }
+
+                    $account = Account::query()
+                        ->whereKey($schedule->account_id)
+                        ->first();
+
+                    $category = $schedule->category_id
+                        ? Category::query()
+                            ->whereKey($schedule->category_id)
+                            ->first()
+                        : null;
+
+                    $result['schedules_processed']++;
+
+                    $nextRunDate = Carbon::parse(
+                        $schedule->next_run_date
+                    )->startOfDay();
+
+                    $endDate = $schedule->end_date
+                        ? Carbon::parse($schedule->end_date)->startOfDay()
+                        : null;
+
+                    while ($nextRunDate->lte($today)) {
+                        if ($endDate && $nextRunDate->gt($endDate)) {
+                            break;
+                        }
+
+                        $scheduledDate = $nextRunDate->toDateString();
+
+                        $existingLog = $schedule->logs()
+                            ->whereDate('scheduled_date', $scheduledDate)
+                            ->exists();
+
+                        if ($existingLog) {
+                            $result['duplicates_skipped']++;
+                        } else {
+                            $failureReason = $this->validateReferences(
+                                $schedule,
+                                $account,
+                                $category
+                            );
+
+                            if ($failureReason !== null) {
+                                $result['failed']++;
+                            } elseif ($schedule->confirmation_required) {
+                                $result['pending']++;
+                            } else {
+                                $result['generated']++;
+                            }
+                        }
+
+                        $nextRunDate = $this->calculateNextRunDate(
+                            $schedule,
+                            $nextRunDate
+                        );
+                    }
+                } catch (Throwable $exception) {
+                    report($exception);
+                    $result['errors']++;
+                }
+            }
+
+            return $result;
+        }
 
     /**
      * Memproses satu jadwal dengan penguncian database.
